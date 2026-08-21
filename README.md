@@ -1,6 +1,6 @@
 # Manutenção Preditiva de Ativos Industriais
 
-**Sistemas Ubíquos — Atividade 01** | Integrantes: *(nome 1)*, *(nome 2)*, *(nome 3)*
+**Sistemas Ubíquos — Atividade 01** | Integrantes: Guilherme Iago, João Victor Lemes, Marcos Sousa, Yasmin Moura
 
 **Cenário:** monitoramento de vibração e temperatura em máquinas rotativas por nós sem fio, com decisão em um hub local e visualização em interface web (inspirado na Tractian).
 
