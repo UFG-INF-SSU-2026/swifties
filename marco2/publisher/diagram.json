@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "author": "Swifties",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0,
+      "attrs": { "env": "micropython-20260406-v1.28.0" } },
+    { "type": "wokwi-mpu6050", "id": "imu1", "top": 150, "left": 170, "attrs": {} },
+    { "type": "wokwi-ds18b20", "id": "tempCarcaca", "top": -110, "left": 180,
+      "attrs": { "temperature": "40" } },
+    { "type": "wokwi-ds18b20", "id": "tempAmbiente", "top": -110, "left": 260,
+      "attrs": { "temperature": "25" } },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": -120, "left": -110, "attrs": {} },
+    { "type": "wokwi-rgb-led", "id": "rgb1", "top": -60, "left": -220, "attrs": { "common": "cathode" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": 60, "left": -170, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r2", "top": 80, "left": -170, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r3", "top": 100, "left": -170, "attrs": { "value": "220" } },
+    { "type": "wokwi-pushbutton", "id": "btn1", "top": 230, "left": -130, "attrs": { "color": "red" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "imu1:VCC", "esp:3V3", "red", [] ],
+    [ "imu1:GND", "esp:GND.2", "black", [] ],
+    [ "imu1:SDA", "esp:21", "green", [] ],
+    [ "imu1:SCL", "esp:22", "blue", [] ],
+
+    [ "tempCarcaca:VCC", "esp:3V3", "red", [] ],
+    [ "tempCarcaca:GND", "esp:GND.2", "black", [] ],
+    [ "tempCarcaca:DQ", "esp:18", "orange", [] ],
+    [ "tempAmbiente:VCC", "esp:3V3", "red", [] ],
+    [ "tempAmbiente:GND", "esp:GND.2", "black", [] ],
+    [ "tempAmbiente:DQ", "esp:19", "orange", [] ],
+
+    [ "pot1:VCC", "esp:3V3", "red", [] ],
+    [ "pot1:GND", "esp:GND.1", "black", [] ],
+    [ "pot1:SIG", "esp:34", "green", [] ],
+
+    [ "rgb1:COM", "esp:GND.1", "black", [] ],
+    [ "rgb1:R", "r1:1", "red", [] ],
+    [ "r1:2", "esp:25", "red", [] ],
+    [ "rgb1:G", "r2:1", "green", [] ],
+    [ "r2:2", "esp:26", "green", [] ],
+    [ "rgb1:B", "r3:1", "blue", [] ],
+    [ "r3:2", "esp:27", "blue", [] ],
+
+    [ "btn1:1.l", "esp:4", "green", [] ],
+    [ "btn1:2.l", "esp:GND.1", "black", [] ]
+  ],
+  "dependencies": {}
+}
