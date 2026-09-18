@@ -1,0 +1,11 @@
+services:
+  consumidor:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MQTT_HOST: ${MQTT_HOST:-host.docker.internal}
+      MQTT_PORTA: ${MQTT_PORTA:-1883}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
