@@ -1,0 +1,174 @@
+:root {
+    --bg-color: #f4f7f6;
+    --card-bg: #ffffff;
+    --text-main: #333333;
+    --text-muted: #777777;
+    
+    /* Cores de Estado */
+    --cor-normal: #10b981;       /* Verde */
+    --cor-atencao: #f59e0b;      /* Amarelo */
+    --cor-critico: #ef4444;      /* Vermelho */
+    --cor-desconectado: #f97316; /* Laranja */
+    --cor-aguardando: #3b82f6;   /* Azul */
+    --cor-desligado: #9ca3af;    /* Cinza */
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: #1e293b;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Base do Card */
+.asset-card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border-left: 8px solid var(--cor-desligado); /* Borda padrão */
+    transition: all 0.3s ease;
+}
+
+.asset-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.asset-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* Métricas */
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.metric-box {
+    background-color: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.metric-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 0.25rem;
+}
+
+.timestamp {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 1rem;
+}
+
+/* 🟢 ESTADOS DINÂMICOS (Classes injetadas pelo JS) 🔴 */
+.state-normal { border-color: var(--cor-normal); }
+.state-normal .decisao-badge { background-color: var(--cor-normal); color: white; }
+
+.state-atencao { border-color: var(--cor-atencao); }
+.state-atencao .decisao-badge { background-color: var(--cor-atencao); color: white; }
+
+.state-critico { border-color: var(--cor-critico); animation: piscar 1.5s infinite; }
+.state-critico .decisao-badge { background-color: var(--cor-critico); color: white; }
+
+.state-desconectado { border-color: var(--cor-desconectado); }
+.state-desconectado .decisao-badge { background-color: var(--cor-desconectado); color: white; }
+
+.state-aguardando { border-color: var(--cor-aguardando); }
+.state-aguardando .decisao-badge { background-color: var(--cor-aguardando); color: white; }
+
+.state-desligado { border-color: var(--cor-desligado); opacity: 0.7; }
+.state-desligado .decisao-badge { background-color: var(--cor-desligado); color: white; }
+
+/* Status de Conexão MQTT Superior */
+.status-online { background-color: var(--cor-normal); }
+.status-offline { background-color: var(--cor-critico); }
+
+@keyframes piscar {
+    0%, 100% { box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    50% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+}
+
+.chart-box {
+    position: relative;
+    height: 220px;
+    margin-top: 1rem;
+}
+
+.historico-titulo {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin: 1rem 0 0.5rem;
+}
+
+.historico {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.85rem;
+}
+
+.historico li {
+    border-left: 4px solid var(--cor-desligado);
+    padding: 0.2rem 0.5rem;
+    margin-bottom: 0.25rem;
+    background: #f8fafc;
+}
+
+.desatualizado .timestamp {
+    color: var(--cor-critico);
+    font-weight: bold;
+}
+
+.desatualizado .timestamp::after {
+    content: " — consumidor sem resposta";
+}

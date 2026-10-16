@@ -17,10 +17,10 @@ MQTT_SENHA = os.getenv("MQTT_SENHA", "consumidor123")
 PREFIXO_ENTRADA = "swifties"
 PREFIXO_SAIDA = "consumidor"
 
-# perfil de protótipo (atv02.md, questão 6)
-JANELA_S = 120
-PASSO_S = 10
-MIN_VIB, MIN_TEMP = 12, 30
+JANELA_S = 30
+PASSO_S = 2
+MIN_VIB, MIN_TEMP = 3, 3
+AMOSTRAS_DELTA_T = 3
 SILENCIO_S = 15   # sem nenhum evento por esse tempo -> SEM_COMUNICACAO
 
 # regra de decisão (atv02.md, questão 9)
@@ -101,7 +101,7 @@ def avaliar(ativo, agora):
 
     rms = [d["rms_resultante"] for _, d in ativo.vib]
     curtoses = [d["curtose"] for _, d in ativo.vib]
-    delta_t = mean(d["delta_t"] for _, d in ativo.temp)
+    delta_t = mean(d["delta_t"] for _, d in ativo.temp[-AMOSTRAS_DELTA_T:])
 
     if ativo.baseline is None:
         # primeira janela válida vira a linha de base do ativo (sem camada de
@@ -126,13 +126,13 @@ def ciclo(cliente):
     agora = datetime.now(timezone.utc)
     for ativo in list(ativos.values()):
         decisao, metricas = avaliar(ativo, agora)
-        if decisao == ativo.ultima_decisao:
-            continue
         payload = {"entityId": ativo.entity_id, "decisao": decisao,
                    "timestamp": agora.strftime("%Y-%m-%dT%H:%M:%SZ"), **metricas}
-        cliente.publish(f"{PREFIXO_SAIDA}/{ativo.entity_id}/decisao", json.dumps(payload), qos=1)
-        log.info("[DECISAO] %s -> %s", ativo.entity_id, decisao)
-        ativo.ultima_decisao = decisao
+        cliente.publish(f"{PREFIXO_SAIDA}/{ativo.entity_id}/decisao", json.dumps(payload),
+                        qos=1, retain=True)
+        if decisao != ativo.ultima_decisao:
+            log.info("[DECISAO] %s -> %s", ativo.entity_id, decisao)
+            ativo.ultima_decisao = decisao
 
 
 def main():
