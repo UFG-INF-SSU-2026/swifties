@@ -7,5 +7,7 @@ services:
     environment:
       MQTT_HOST: ${MQTT_HOST:-host.docker.internal}
       MQTT_PORTA: ${MQTT_PORTA:-1883}
+      MQTT_USUARIO: ${MQTT_USUARIO:-consumidor}
+      MQTT_SENHA: ${MQTT_SENHA:-consumidor123}
     extra_hosts:
       - "host.docker.internal:host-gateway"

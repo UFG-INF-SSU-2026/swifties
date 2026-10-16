@@ -18,6 +18,7 @@ Acompanhe os logs do consumidor (ou `mosquitto_sub -t 'consumidor/#' -v`)
 enquanto cada cenário roda.
 """
 import argparse
+import os
 import json
 import time
 import uuid
@@ -143,10 +144,13 @@ def main():
     p.add_argument("--cenario", choices=sorted(CENARIOS), default="normal")
     p.add_argument("--host", default="localhost")
     p.add_argument("--porta", type=int, default=1883)
+    p.add_argument("--usuario", default="esp32-07")
+    p.add_argument("--senha", default="esp32123")
     args = p.parse_args()
 
     c = mqtt.Client(client_id=f"mock-publisher-{uuid.uuid4().hex[:6]}",
                      callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+    c.username_pw_set(args.usuario, args.senha)
     c.connect(args.host, args.porta, keepalive=30)
     c.loop_start()
     try:
