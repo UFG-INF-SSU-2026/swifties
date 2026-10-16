@@ -119,6 +119,5 @@ dashboard/
 │   ├── config.js       # Parâmetros de rede, tópicos e metadados de decisão
 │   └── app.js          # Conexão MQTT WebSocket, parsing de JSON e re-renderização de DOM
 ├── index.html          # Layout SPA base da aplicação
-├── Dockerfile          # Imagem de produção baseada em Nginx Alpine
 ├── docker-compose.yml  # Orquestração do serviço do frontend
 └── README.md           # Documentação técnica do componente

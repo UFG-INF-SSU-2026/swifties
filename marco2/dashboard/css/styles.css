@@ -38,7 +38,7 @@ body {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
     gap: 1.5rem;
 }
 
@@ -78,8 +78,8 @@ body {
 /* Métricas */
 .metrics {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
     margin-top: 1rem;
 }
 
@@ -135,4 +135,40 @@ body {
 @keyframes piscar {
     0%, 100% { box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     50% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+}
+
+.chart-box {
+    position: relative;
+    height: 220px;
+    margin-top: 1rem;
+}
+
+.historico-titulo {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin: 1rem 0 0.5rem;
+}
+
+.historico {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.85rem;
+}
+
+.historico li {
+    border-left: 4px solid var(--cor-desligado);
+    padding: 0.2rem 0.5rem;
+    margin-bottom: 0.25rem;
+    background: #f8fafc;
+}
+
+.desatualizado .timestamp {
+    color: var(--cor-critico);
+    font-weight: bold;
+}
+
+.desatualizado .timestamp::after {
+    content: " — consumidor sem resposta";
 }
