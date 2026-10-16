@@ -1,0 +1,9 @@
+user admin
+topic readwrite #
+
+user esp32-07
+topic write swifties/esp32-07/#
+
+user consumidor
+topic read swifties/#
+topic write consumidor/#

@@ -85,7 +85,7 @@ Evento inválido **é publicado** com `quality: "INVALIDO"` e `motivo` — o con
 - **QoS 1:** o nó espera o PUBACK do broker (timeout 5 s). Sem PUBACK, o evento continua no buffer e é reenviado — o consumidor pode receber repetição e deduplica por `eventId`.
 - **Last will:** se a conexão cair sem DISCONNECT (queda real ou botão), o broker publica `OFFLINE` em nome do nó. O silêncio fica visível.
 - **Reconexão:** nova tentativa a cada 5 s.
-- Sem autenticação e sem TLS (protótipo).
+- Autenticação por usuário/senha (`esp32-07`) e ACL: o nó só publica em `swifties/esp32-07/#`. Sem TLS (protótipo): pelo túnel ngrok a senha trafega em claro.
 
 ## Buffer e enlace
 Lista de até 100 eventos. Cheia → descarta o mais antigo e conta `perdidos`. Um evento só sai do buffer após o PUBACK.

@@ -12,6 +12,8 @@ log = logging.getLogger("consumidor")
 
 MQTT_HOST = os.getenv("MQTT_HOST", "localhost")
 MQTT_PORTA = int(os.getenv("MQTT_PORTA", "1883"))
+MQTT_USUARIO = os.getenv("MQTT_USUARIO", "consumidor")
+MQTT_SENHA = os.getenv("MQTT_SENHA", "consumidor123")
 PREFIXO_ENTRADA = "swifties"
 PREFIXO_SAIDA = "consumidor"
 
@@ -40,6 +42,9 @@ class Ativo:
 
 
 def ao_conectar(cliente, userdata, flags, rc, properties=None):
+    if rc != 0:
+        log.error("conexão recusada pelo broker: %s", rc)
+        return
     cliente.subscribe(f"{PREFIXO_ENTRADA}/#", qos=1)
     log.info("conectado ao broker; assinado em %s/#", PREFIXO_ENTRADA)
 
@@ -133,6 +138,7 @@ def ciclo(cliente):
 def main():
     cliente = mqtt.Client(client_id="consumidor-marco2",
                            callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+    cliente.username_pw_set(MQTT_USUARIO, MQTT_SENHA)
     cliente.on_connect = ao_conectar
     cliente.on_message = ao_receber
     cliente.connect(MQTT_HOST, MQTT_PORTA, keepalive=60)
