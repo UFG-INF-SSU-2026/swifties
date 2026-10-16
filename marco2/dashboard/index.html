@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento Preditivo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- MQTT.js para conectar via WebSocket -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">⚙️ Simulação swifties</div>
+        <div id="mqtt-status" class="badge status-offline">Broker Offline</div>
+    </header>
+
+    <main class="container">
+        <div id="assets-grid" class="grid">
+            <!-- Os cards das máquinas aparecerão aqui dinamicamente -->
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

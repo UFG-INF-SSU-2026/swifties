@@ -20,7 +20,7 @@ PERSISTENCIA = 2
 
 # o endereco do ngrok muda toda vez que o tunel reinicia
 MQTT_HOST = "0.tcp.sa.ngrok.io"
-MQTT_PORTA = 24143
+MQTT_PORTA = 23772
 MQTT_PREFIXO = "swifties/" + DEVICE_ID
 
 BUFFER_MAX = 100
