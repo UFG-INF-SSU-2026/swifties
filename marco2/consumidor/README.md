@@ -48,4 +48,6 @@ python3 ferramentas/mock_publisher.py --cenario duplicata
 python3 ferramentas/mock_publisher.py --cenario sem_comunicacao
 ```
 
-Rode `python main.py` numa aba e o cenário desejado em outra. Os cenários `atencao`/`critico` esperam ~12s entre a rajada que define a baseline e a rajada anômala, de propósito: o consumidor só reavalia a cada 10s (`PASSO_S`), então as duas rajadas precisam cair em ciclos diferentes — senão a primeira avaliação mistura as duas e aprende uma baseline errada (e sempre volta `NORMAL` na primeira janela).
+A janela é de 30s (mínimo de 3 amostras de cada tipo) e o ΔT usa a média das 3 últimas temperaturas, para uma mudança no sensor aparecer em poucos segundos. A cada ciclo o consumidor publica a decisão atual (com `retain`), não só quando ela muda, para o dashboard ter métricas novas a cada 2s e mostrar o último estado ao abrir.
+
+Rode `python main.py` numa aba e o cenário desejado em outra. Os cenários `atencao`/`critico` esperam ~12s entre a rajada que define a baseline e a rajada anômala, de propósito: o consumidor só reavalia a cada 2s (`PASSO_S`), então as duas rajadas precisam cair em ciclos diferentes — senão a primeira avaliação mistura as duas e aprende uma baseline errada (e sempre volta `NORMAL` na primeira janela).
