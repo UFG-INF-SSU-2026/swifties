@@ -20,7 +20,9 @@ PERSISTENCIA = 2
 
 # o endereco do ngrok muda toda vez que o tunel reinicia
 MQTT_HOST = "0.tcp.sa.ngrok.io"
-MQTT_PORTA = 23772
+MQTT_PORTA = 24143
+MQTT_USUARIO = "esp32-07"
+MQTT_SENHA = "esp32123"
 MQTT_PREFIXO = "swifties/" + DEVICE_ID
 
 BUFFER_MAX = 100
@@ -117,7 +119,8 @@ cor(AZUL)
 if conectar_wifi():
     sincronizar_relogio()
 
-mqtt = evento.ConexaoMQTT(DEVICE_ID, MQTT_HOST, MQTT_PORTA, MQTT_PREFIXO)
+mqtt = evento.ConexaoMQTT(DEVICE_ID, MQTT_HOST, MQTT_PORTA, MQTT_PREFIXO,
+                        usuario=MQTT_USUARIO, senha=MQTT_SENHA)
 emissor = evento.Emissor(DEVICE_ID, ENTITY_ID, boot_id=time.time(),
                          transporte=mqtt.enviar, max_buffer=BUFFER_MAX)
 mpu = sensores.MPU6050(I2C(0, scl=Pin(22), sda=Pin(21), freq=400000))

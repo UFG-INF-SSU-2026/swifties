@@ -1,8 +1,12 @@
 const mqttStatusEl = document.getElementById('mqtt-status');
 const gridEl = document.getElementById('assets-grid');
 
-// Conecta no broker
-const client = mqtt.connect(CONFIG.MQTT_BROKER_URL);
+// Conecta no broker passando as credenciais de autenticação do config.js
+const client = mqtt.connect(CONFIG.MQTT_BROKER_URL, {
+    username: CONFIG.MQTT_USER,
+    password: CONFIG.MQTT_PASS,
+    clientId: 'dashboard_' + Math.random().toString(16).substring(2, 8)
+});
 
 client.on('connect', () => {
     console.log('Conectado ao broker MQTT via WebSocket');
@@ -70,13 +74,8 @@ function renderizarCard(dados) {
     card.querySelector('.rms-val').textContent = dados.rmsNorm ? `${dados.rmsNorm}x` : '--';
     card.querySelector('.temp-val').textContent = dados.deltaT ? dados.deltaT : '--';
 
-    // 2. A CORREÇÃO DO BUG (Aplicar a cor correta)
-    // Extraímos todos os nomes de classes CSS possíveis usando Set para evitar qualquer duplicata
+    // 2. Aplicar a cor correta do estado
     const todasAsClasses = [...new Set(Object.values(CONFIG.DECISAO_META).map(m => m.cssClass))];
-    
-    // Removemos qualquer estado anterior de forma limpa e segura
     todasAsClasses.forEach(cls => card.classList.remove(cls));
-    
-    // Adicionamos a nova classe do estado atual (isso muda a cor da borda e do badge)
     card.classList.add(meta.cssClass);
 }

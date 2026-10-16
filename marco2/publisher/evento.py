@@ -11,11 +11,13 @@ def agora_iso():
 
 class ConexaoMQTT:
     def __init__(self, client_id, host, porta, prefixo,
-                 keepalive_s=60, reconexao_ms=5000, timeout_s=5):
+                 keepalive_s=60, reconexao_ms=5000, timeout_s=5,
+                 usuario=None, senha=None):
         self.host, self.porta, self.prefixo = host, porta, prefixo
         self.reconexao_ms, self.timeout_s = reconexao_ms, timeout_s
         self.topico_status = prefixo + "/status"
-        self.cliente = MQTTClient(client_id, host, porta, keepalive=keepalive_s)
+        self.cliente = MQTTClient(client_id, host, porta, user=usuario, password=senha,
+                                keepalive=keepalive_s)
         self.cliente.set_last_will(self.topico_status, "OFFLINE", retain=True, qos=1)
         self.conectado = False
         self.ultima_tentativa = None

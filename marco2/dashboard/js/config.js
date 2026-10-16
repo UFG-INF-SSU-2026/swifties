@@ -2,6 +2,10 @@ const CONFIG = {
     // Usando protocolo WebSocket (ws://) na porta 9001 configurada no Mosquitto
     MQTT_BROKER_URL: 'ws://localhost:9001',
     
+    // Autenticação MQTT
+    MQTT_USER: 'admin',
+    MQTT_PASS: 'admin123', // Cole a senha do admin aqui
+    
     // Assinamos todas as decisões de todos os consumidores
     MQTT_TOPIC: 'consumidor/+/decisao',
     

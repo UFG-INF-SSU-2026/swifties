@@ -1,4 +1,4 @@
-# Broker MQTT do Marco 2 (sem autenticacao: prototipo) + tunel ngrok para o Wokwi.
+# Broker MQTT do Marco 2 (autenticacao por usuario/senha + ACL) + tunel ngrok para o Wokwi.
 services:
   mosquitto:
     image: eclipse-mosquitto:2
@@ -8,6 +8,8 @@ services:
       - "9001:9001"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./acl:/mosquitto/config/acl:ro
+      - ./passwd:/mosquitto/config/passwd:ro
 
   ngrok:
     image: ngrok/ngrok:latest
