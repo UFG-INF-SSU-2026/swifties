@@ -17,9 +17,6 @@ MQTT_SENHA = os.getenv("MQTT_SENHA", "consumidor123")
 PREFIXO_ENTRADA = "swifties"
 PREFIXO_SAIDA = "consumidor"
 
-# perfil de bancada, mais curto que o de atv02.md (questão 6: 2 min, 12 vib / 30 temp),
-# porque o nó simulado entrega bem menos eventos que o nominal e a janela longa
-# nunca enchia nem reagia rápido a uma mudança
 JANELA_S = 30
 PASSO_S = 2
 MIN_VIB, MIN_TEMP = 3, 3
