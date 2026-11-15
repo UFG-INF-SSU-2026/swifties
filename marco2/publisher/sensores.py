@@ -17,6 +17,15 @@ TAXA_MAX_C_POR_MIN = 5.0
 
 CONVERSAO_MS = 750
 
+# --- simulacao da vibracao (Wokwi) ---------------------------------------
+# O MPU6050 do Wokwi so entrega valores estaticos. A intensidade da vibracao
+# vem do deslocamento da leitura em relacao ao repouso; a oscilacao e sintetica.
+# No hardware real: SIMULAR_VIBRACAO = False (nenhuma injecao; vale a leitura).
+SIMULAR_VIBRACAO = True
+G_REPOUSO = (0.0, 0.0, 1.0)   # leitura do MPU parado no Wokwi (ajuste se diferir)
+ZONA_MORTA_G = 0.05
+AMPLITUDE_MAX_G = 4.0
+
 
 def _int16(alto, baixo):
     v = (alto << 8) | baixo
@@ -57,8 +66,18 @@ def _ruido():
     return (random.getrandbits(10) / 1023 - 0.5) * 2 * RUIDO_G
 
 
-def coletar_janela(mpu, amplitude_g, n, periodo_ms, freq_hz):
+def _deslocamento(ax, ay, az):
+    """Amplitude (g) e versor do deslocamento em relacao ao repouso."""
+    dx, dy, dz = ax - G_REPOUSO[0], ay - G_REPOUSO[1], az - G_REPOUSO[2]
+    m = math.sqrt(dx * dx + dy * dy + dz * dz)
+    if m < ZONA_MORTA_G:
+        return 0.0, (1.0, 0.0, 0.0)
+    return min(m, AMPLITUDE_MAX_G), (dx / m, dy / m, dz / m)
+
+
+def coletar_janela(mpu, n, periodo_ms, freq_hz):
     amostras = []
+    amp, u = 0.0, (1.0, 0.0, 0.0)
     t0 = time.ticks_us()
     for i in range(n):
         espera = time.ticks_diff(time.ticks_add(t0, i * periodo_ms * 1000), time.ticks_us())
@@ -75,10 +94,15 @@ def coletar_janela(mpu, amplitude_g, n, periodo_ms, freq_hz):
         if not (MAG_MIN_G < mag < MAG_MAX_G):
             return None, "mpu_fora_de_faixa"
 
-        # senoide do desbalanceamento no eixo X + ruido nos tres eixos
-        ax += amplitude_g * math.sin(2 * math.pi * freq_hz * t) + _ruido()
-        ay += _ruido()
-        az += _ruido()
+        if SIMULAR_VIBRACAO:
+            if i == 0:
+                # amplitude fixada pela 1a leitura valida da janela
+                amp, u = _deslocamento(ax, ay, az)
+            # senoide do desbalanceamento na direcao do deslocamento + ruido
+            sn = amp * math.sin(2 * math.pi * freq_hz * t)
+            ax += sn * u[0] + _ruido()
+            ay += sn * u[1] + _ruido()
+            az += sn * u[2] + _ruido()
         amostras.append((t, ax, ay, az))
     return amostras, None
 

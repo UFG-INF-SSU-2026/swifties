@@ -22,7 +22,6 @@ Mede vibração e temperatura de um motor, valida as leituras, detecta máquina 
 | MPU6050 | 21 (SDA) / 22 (SCL) | vibração |
 | DS18B20 carcaça | 18 | temperatura da carcaça |
 | DS18B20 ambiente | 19 | temperatura ambiente |
-| Potenciômetro | 34 | amplitude da vibração sintética |
 | Botão | 4 | cortar / restabelecer enlace (simulado) |
 | LED RGB + 3× 220 Ω | 25 / 26 / 27 | estado do nó |
 
@@ -35,7 +34,7 @@ Cada DS18B20 fica em um barramento próprio: evita depender da ordem de varredur
 | 5 s | janela de 64 amostras a ~100 Hz → indicadores → `medicao.vibracao`; se o estado operacional mudar → `maquina.mudanca_operacao` |
 | 50 ms | mantém a conexão MQTT, publica **um** evento do buffer (mais antigo primeiro), atualiza LED |
 
-**Vibração.** Cada amostra = leitura real do MPU6050 + `A·sin(2π·29,6·t)` no eixo X + ruído, com `A = pot/4095 × 4 g`. Da janela: `rms_x/y/z`, `rms_resultante` (gravidade removida pela média), `pico`, `curtose` e `freq_dominante` (cruzamentos de zero com histerese).
+**Vibração.** Cada amostra = leitura real do MPU6050 + `A·sin(2π·29,6·t)` na direção do deslocamento do acelerômetro + ruído, com `A = ‖a − a_repouso‖` (repouso = 0, 0, 1 g; teto 4 g; zona morta 0,05 g), fixada pela primeira leitura de cada janela. No Wokwi, a intensidade é controlada pelos sliders de aceleração do MPU6050; `rms_resultante ≈ 0,707 × A`. Da janela: `rms_x/y/z`, `rms_resultante` (gravidade removida pela média), `pico`, `curtose` e `freq_dominante` (cruzamentos de zero com histerese).
 
 **Estado operacional.** `LIGADA` se `rms_resultante ≥ 0,20 g`; `DESLIGADA` se `< 0,10 g`; entre os dois mantém o estado (histerese). A mudança só vale após **2 janelas** consecutivas. A classificação NORMAL/ATENÇÃO/CRÍTICO é do consumidor.
 
@@ -99,15 +98,16 @@ Lista de até 100 eventos. Cheia → descarta o mais antigo e conta `perdidos`. 
 | magenta | última leitura inválida |
 
 ## Roteiro de demonstração
-1. **Máquina ligada:** pot em ~50% → após 2 janelas, `[OPERACAO] DESCONHECIDO -> LIGADA`.
-2. **Desligar:** pot em 0 → após ~10 s, evento `maquina.mudanca_operacao` com `DESLIGADA`.
+1. **Máquina ligada:** deslocar o acelerômetro ~2 g (ex.: X = 2 g, Z = 1 g) → após 2 janelas, `[OPERACAO] DESCONHECIDO -> LIGADA`. Esperar ~15 s: o consumidor aprende a linha de base com esse deslocamento; só depois variar a intensidade.
+2. **Desligar:** voltar o acelerômetro ao repouso (0, 0, 1 g) → após ~10 s, evento `maquina.mudanca_operacao` com `DESLIGADA`.
 3. **Falha de enlace (simulada):** botão → socket fechado sem DISCONNECT → `OFFLINE` aparece no `mosquitto_sub`, LED vermelho, `[BUFFER]` a cada evento. Botão de novo → `ONLINE`, LED amarelo, eventos atrasados chegam em ordem de `sequence` com `eventTime` original.
 4. **Falha real do broker:** `docker compose stop mosquitto` → `[MQTT] envio falhou`, tentativas a cada 5 s; `docker compose start mosquitto` → reconecta e drena o buffer.
 5. **Sensor solto:** alterar bruscamente o DS18B20 da carcaça → um evento `INVALIDO / salto_de_temperatura`, LED magenta; a leitura seguinte já é válida.
-6. **Acelerômetro com defeito:** zerar os três eixos do MPU6050 → `INVALIDO / mpu_fora_de_faixa`.
+6. **Acelerômetro com defeito:** zerar os três eixos do MPU6050 (diferente do repouso, que mantém Z = 1 g) → `INVALIDO / mpu_fora_de_faixa`.
 
 ## Limitações declaradas
-- A vibração é **sintetizada** sobre a leitura real: o Wokwi só oferece valores estáticos no MPU6050. O processamento é real; o fenômeno, não.
+- A oscilação é **sintetizada** sobre a leitura real: o Wokwi só oferece valores estáticos no MPU6050, então o acelerômetro controla a *intensidade* (deslocamento em relação ao repouso) e não a forma de onda. O processamento é real; o fenômeno, não. No hardware real, `SIMULAR_VIBRACAO = False` em `sensores.py` desliga a injeção (e convém configurar o filtro passa-baixa do MPU, registrador 0x1A, por causa de aliasing a 100 Hz).
+- A linha de base do consumidor é o deslocamento em que o acelerômetro está nos primeiros ~15 s após o boot.
 - A janela de vibração bloqueia o laço por ~0,64 s a cada 5 s (o botão usa interrupção e não é perdido).
 - `freq_dominante` por cruzamentos de zero tem resolução de ~0,8 Hz; a curtose de uma senoide pura é 1,5, então a curtose só varia com ruído.
 - Buffer em RAM: reiniciar o ESP32 perde os eventos pendentes.
