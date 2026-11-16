@@ -1,4 +1,4 @@
-from machine import Pin, ADC, I2C
+from machine import Pin, I2C
 import network, ntptime, time
 import sensores, evento
 
@@ -12,7 +12,6 @@ LOOP_MS = 50
 AMOSTRAS = 64
 PERIODO_AMOSTRA_MS = 10
 FREQ_ROTACAO_HZ = 29.6
-AMPLITUDE_MAX_G = 4.0
 
 LIGA_RMS_G = 0.20
 DESLIGA_RMS_G = 0.10
@@ -29,8 +28,6 @@ BUFFER_MAX = 100
 DEBOUNCE_MS = 300
 
 led_r, led_g, led_b = Pin(25, Pin.OUT), Pin(26, Pin.OUT), Pin(27, Pin.OUT)
-pot = ADC(Pin(34))
-pot.atten(ADC.ATTN_11DB)
 btn = Pin(4, Pin.IN, Pin.PULL_UP)
 
 AZUL, VERDE, AMARELO, VERMELHO, MAGENTA = (0, 0, 1), (0, 1, 0), (1, 1, 0), (1, 0, 0), (1, 0, 1)
@@ -164,9 +161,7 @@ def tratar_temperatura():
 
 def tratar_vibracao():
     global invalido_vib
-    amplitude = pot.read() / 4095 * AMPLITUDE_MAX_G
-    amostras, motivo = sensores.coletar_janela(mpu, amplitude, AMOSTRAS,
-                                               PERIODO_AMOSTRA_MS, FREQ_ROTACAO_HZ)
+    amostras, motivo = sensores.coletar_janela(mpu, AMOSTRAS, PERIODO_AMOSTRA_MS, FREQ_ROTACAO_HZ)
     ind = sensores.calcular_indicadores(amostras) if amostras else None
     if ind is not None:
         motivo = sensores.validar_vibracao(ind)
