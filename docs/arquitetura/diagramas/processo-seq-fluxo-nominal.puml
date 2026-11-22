@@ -1,0 +1,51 @@
+@startuml processo-seq-fluxo-nominal
+!include _estilo.iuml
+title Visão de processo — Fluxo nominal: da medição ao dashboard
+autonumber "<b>0."
+
+participant "ESP32\n(publisher)" as No
+participant "ngrok\n(túnel TCP)" as Ngrok
+participant "Mosquitto\n(broker)" as Broker
+participant "Consumidor\n(hub / névoa)" as Hub
+participant "Dashboard\n(navegador)" as Dash
+actor "Técnico / PCM" as User
+
+== Inicialização ==
+No -> No : Wi-Fi + NTP; LED azul
+No -> Ngrok : CONNECT (esp32-07, last will OFFLINE)
+Ngrok -> Broker : encaminha TCP
+Broker --> No : CONNACK
+No -> Broker : PUBLISH swifties/esp32-07/status "ONLINE" (retido)
+Hub -> Broker : CONNECT (consumidor) + SUBSCRIBE swifties/# QoS 1
+Dash -> Broker : CONNECT via WebSocket :9001 + SUBSCRIBE consumidor/+/decisao
+Broker --> Dash : última decisão retida de cada ativo
+
+== Ciclo de medição (laço de 50 ms no nó) ==
+loop a cada 2 s
+  No -> No : converter DS18B20 (750 ms, sem bloquear)\nvalidar → medicao.temperatura → buffer
+end
+loop a cada 5 s
+  No -> No : janela 64 amostras ~100 Hz → indicadores\nvalidar → medicao.vibracao → buffer
+  opt estado operacional mudou (2 janelas)
+    No -> No : maquina.mudanca_operacao → buffer
+  end
+end
+No -> Broker : PUBLISH swifties/esp32-07/medicao/... QoS 1 (1 evento por laço)
+Broker --> No : PUBACK
+No -> No : remove do buffer; LED verde
+Broker -> Hub : entrega evento
+
+Hub -> Hub : dedup por eventId\nquality = VALIDO?\nanexa à janela por eventTime
+
+== Ciclo de avaliação (a cada 2 s) ==
+Hub -> Hub : poda janela (30 s)\nverifica silêncio, mínimos, operação\nlinha de base → rmsNorm, curtoseMax, ΔT\naplica regra
+Hub -> Broker : PUBLISH consumidor/motor-linha3-02/decisao\nQoS 1, retido
+Broker -> Dash : entrega decisão
+Dash -> Dash : atualiza card, cor, métricas,\ngráfico e histórico
+Dash --> User : estado visível
+
+note over No, Dash
+  Latência típica: medição → decisão ≤ 2 s após o evento chegar;
+  degradação sustentada aparece em até uma janela (30 s).
+end note
+@enduml

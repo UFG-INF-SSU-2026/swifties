@@ -1,0 +1,27 @@
+' Estilo comum a todos os diagramas 4+1.
+' Layout Smetana (embutido no PlantUML): dispensa a instalação do Graphviz.
+!pragma layout smetana
+
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam roundCorner 8
+skinparam ArrowColor #475569
+skinparam BorderColor #475569
+skinparam BackgroundColor #FFFFFF
+skinparam TitleFontSize 15
+skinparam NoteBackgroundColor #FEF9C3
+skinparam NoteBorderColor #CA8A04
+skinparam PackageBackgroundColor #F8FAFC
+skinparam ComponentBackgroundColor #E0F2FE
+skinparam NodeBackgroundColor #F1F5F9
+skinparam ClassBackgroundColor #F8FAFC
+skinparam ClassHeaderBackgroundColor #E0F2FE
+skinparam StateBackgroundColor #F8FAFC
+skinparam ActivityBackgroundColor #F8FAFC
+skinparam ParticipantBackgroundColor #E0F2FE
+skinparam ActorBackgroundColor #E0F2FE
+skinparam UsecaseBackgroundColor #F8FAFC
+skinparam SequenceLifeLineBorderColor #94A3B8
+skinparam SequenceGroupBackgroundColor #F1F5F9
+skinparam DatabaseBackgroundColor #FEF3C7

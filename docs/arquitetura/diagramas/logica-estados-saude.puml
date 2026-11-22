@@ -1,0 +1,45 @@
+@startuml logica-estados-saude
+!include _estilo.iuml
+title Visão lógica — Estado de saúde do ativo (hub, avaliado a cada 2 s)
+
+[*] --> DADOS_INSUFICIENTES : primeiro evento\ndo ativo
+
+state DADOS_INSUFICIENTES #DBEAFE : < 3 vibrações ou < 3 temperaturas\nválidas na janela de 30 s
+state NAO_AVALIAVEL #E5E7EB : máquina DESLIGADA
+state SEM_COMUNICACAO #FFEDD5 : nenhum evento há > 15 s
+
+state "Avaliável" as Avaliavel {
+  state "Aprendendo linha de base" as Aprendendo : 1ª janela válida\nvira a linha de base
+  state NORMAL #D1FAE5
+  state ATENCAO #FEF3C7
+  state CRITICO #FEE2E2
+
+  [*] --> Aprendendo : sem linha de base
+  [*] --> NORMAL : com linha de base
+  Aprendendo --> NORMAL : publica NORMAL
+  NORMAL --> ATENCAO : excedentes ≥ 80 %\nou ΔT ≥ base + 10
+  ATENCAO --> CRITICO : rmsNorm ≥ 2,0 e\n(curtose ≥ 6 ou ΔT ≥ base + 20)
+  NORMAL --> CRITICO : idem
+  CRITICO --> ATENCAO : evidência mecânica\nsem confirmação
+  ATENCAO --> NORMAL : condições\ndeixam de valer
+  CRITICO --> NORMAL : condições\ndeixam de valer
+}
+
+DADOS_INSUFICIENTES --> Avaliavel : → mínimos atingidos e máquina não DESLIGADA\n← amostras saem da janela
+DADOS_INSUFICIENTES --> NAO_AVALIAVEL : mínimos atingidos\ne máquina DESLIGADA
+Avaliavel --> NAO_AVALIAVEL : mudanca_operacao\n→ DESLIGADA
+NAO_AVALIAVEL --> DADOS_INSUFICIENTES : mudanca_operacao → LIGADA\n(reavalia mínimos)
+Avaliavel --> DADOS_INSUFICIENTES
+
+Avaliavel --> SEM_COMUNICACAO : silêncio > 15 s
+DADOS_INSUFICIENTES --> SEM_COMUNICACAO : silêncio > 15 s
+NAO_AVALIAVEL --> SEM_COMUNICACAO : silêncio > 15 s
+SEM_COMUNICACAO --> DADOS_INSUFICIENTES : eventos voltam\n(reenvio do buffer)
+
+note bottom of SEM_COMUNICACAO
+  A ordem de avaliação é a da regra:
+  silêncio → amostras → operação → limiares.
+  A decisão é publicada (retida) a cada ciclo,
+  mesmo sem mudança.
+end note
+@enduml

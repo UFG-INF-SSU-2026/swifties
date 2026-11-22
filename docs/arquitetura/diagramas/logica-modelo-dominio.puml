@@ -1,0 +1,140 @@
+@startuml logica-modelo-dominio
+!include _estilo.iuml
+title Visão lógica — Modelo de domínio
+hide empty members
+
+package "Nó sensor (dispositivo)" {
+  class No {
+    deviceId : str
+    bootId : int
+    --
+    coletarJanelaVibracao()
+    medirTemperaturas()
+  }
+  class EstadoOperacao {
+    estado : EstadoMaquina
+    anterior : EstadoMaquina
+    candidato : EstadoMaquina
+    contagem : int
+    --
+    atualizar(rms) : bool
+  }
+  class Emissor {
+    seq : int
+    buffer : Evento[0..100]
+    enviados : int
+    perdidos : int
+    invalidos : int
+    --
+    criar(tipo, dados, motivo) : Evento
+    enviarUm(online) : bool
+    estadoLink() : EstadoEnlace
+  }
+  class ConexaoMQTT {
+    conectado : bool
+    topicoStatus : str
+    --
+    manter()
+    enviar(tipo, msg) : bool
+    derrubar()
+  }
+}
+
+package "Contrato v1" {
+  abstract class Evento {
+    schemaVersion = 1
+    eventId : str
+    eventType : str
+    deviceId : str
+    entityId : str
+    sequence : int
+    {field} eventTime : datetime (UTC)
+    quality : Qualidade
+    motivo : str [0..1]
+  }
+  class MedicaoVibracao {
+    {field} rms_x, rms_y, rms_z : float (g)
+    {field} rms_resultante : float (g)
+    {field} pico : float (g)
+    curtose : float
+    {field} freq_dominante : float (Hz)
+  }
+  class MedicaoTemperatura {
+    {field} temp_carcaca : float (°C)
+    {field} temp_ambiente : float (°C)
+    {field} delta_t : float (°C)
+  }
+  class MudancaOperacao {
+    estado : EstadoMaquina
+    anterior : EstadoMaquina
+    rms_resultante : float
+  }
+  enum Qualidade {
+    VALIDO
+    INVALIDO
+  }
+}
+
+package "Hub / névoa" {
+  class Ativo {
+    entityId : str
+    estadoOperacional : EstadoMaquina
+    ultimoEvento : datetime
+    ultimaDecisao : Decisao
+    vistos : set<eventId>
+    --
+    avaliar(agora) : Decisao
+  }
+  class Janela {
+    duracao = 30 s
+    passo = 2 s
+    {field} vib : list<(ts, MedicaoVibracao)>
+    {field} temp : list<(ts, MedicaoTemperatura)>
+  }
+  class LinhaDeBase {
+    rms : float
+    delta_t : float
+  }
+  class Decisao {
+    entityId : str
+    decisao : EstadoSaude
+    timestamp : datetime
+    rmsNorm : float [0..1]
+    curtoseMax : float [0..1]
+    deltaT : float [0..1]
+  }
+  enum EstadoSaude {
+    NORMAL
+    ATENCAO
+    CRITICO
+    SEM_COMUNICACAO
+    DADOS_INSUFICIENTES
+    NAO_AVALIAVEL
+  }
+}
+
+enum EstadoMaquina {
+  DESCONHECIDO
+  LIGADA
+  DESLIGADA
+}
+
+Evento <|-- MedicaoVibracao
+Evento <|-- MedicaoTemperatura
+Evento <|-- MudancaOperacao
+Evento --> Qualidade
+
+No "1" *-- "1" EstadoOperacao
+No "1" *-- "1" Emissor
+Emissor --> ConexaoMQTT : transporte
+Emissor "1" o-- "0..100" Evento : buffer
+
+No "1" ..> "1" Ativo : monitora\n(entityId)
+Ativo "1" *-- "1" Janela
+Ativo "1" *-- "0..1" LinhaDeBase
+Ativo "1" --> "*" Decisao : publica
+Janela o-- "*" MedicaoVibracao
+Janela o-- "*" MedicaoTemperatura
+MudancaOperacao ..> Ativo : atualiza\nestadoOperacional
+Decisao --> EstadoSaude
+@enduml

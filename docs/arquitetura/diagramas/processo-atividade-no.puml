@@ -1,0 +1,34 @@
+@startuml processo-atividade-no
+!include _estilo.iuml
+title Visão de processo — Laço principal do nó (publisher/main.py)
+
+start
+:LED azul; conecta Wi-Fi; sincroniza NTP;
+:cria ConexaoMQTT, Emissor(boot_id = horário NTP),\nMPU6050, 2× DS18B20, EstadoOperacao;
+repeat
+  if (botão alterou falha_simulada?) then (sim)
+    :log [FALHA SIMULADA];
+  endif
+  if (passaram 2 s desde a última temperatura?) then (sim)
+    :inicia conversão nos dois DS18B20;
+  endif
+  if (conversão iniciada há ≥ 750 ms?) then (sim)
+    :lê carcaça e ambiente; valida;\ncria medicao.temperatura (VALIDO/INVALIDO);
+  endif
+  if (passaram 5 s desde a última vibração?) then (sim)
+    :coleta 64 amostras a ~100 Hz (~0,64 s, bloqueante);
+    :calcula indicadores; valida;\ncria medicao.vibracao;
+    if (válido e EstadoOperacao.atualizar(rms) mudou?) then (sim)
+      :cria maquina.mudanca_operacao;
+    endif
+  endif
+  if (falha_simulada?) then (sim)
+    :mqtt.derrubar();
+  else
+    :mqtt.manter() (reconecta a cada 5 s);
+  endif
+  :emissor.enviar_um(): publica o evento mais antigo\ndo buffer (QoS 1) e remove após PUBACK;
+  :estado_link() → LED\n(verde / amarelo / vermelho / magenta);
+  :dorme 50 ms;
+repeat while (sempre)
+@enduml

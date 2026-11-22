@@ -1,0 +1,65 @@
+@startuml processo-seq-falha-enlace
+!include _estilo.iuml
+title Visão de processo — Queda de enlace com store-and-forward
+autonumber "<b>0."
+
+participant "ESP32\n(publisher)" as No
+participant "Mosquitto\n(broker)" as Broker
+participant "Consumidor\n(hub)" as Hub
+participant "Dashboard" as Dash
+
+== Operação normal ==
+No -> Broker : PUBLISH evento seq=N (QoS 1)
+Broker --> No : PUBACK
+Broker -> Hub : evento seq=N
+
+== Queda (botão ou falha real) ==
+No -x Broker : socket fechado sem DISCONNECT
+Broker -> Hub : PUBLISH swifties/esp32-07/status "OFFLINE"\n(last will, retido)
+Hub -> Hub : registra [STATUS] OFFLINE
+No -> No : LED vermelho
+
+loop enquanto desconectado
+  No -> No : mede normalmente;\neventos seq=N+1..N+k → buffer (máx. 100)
+  opt buffer cheio
+    No -> No : descarta o mais antigo; perdidos++
+  end
+  No ->x Broker : CONNECT (a cada 5 s)
+end
+
+loop a cada 2 s
+  Hub -> Hub : avaliar(): último evento há > 15 s
+  Hub -> Broker : decisao = SEM_COMUNICACAO (retida)
+  Broker -> Dash : SEM_COMUNICACAO (card laranja, métricas "--")
+end
+
+== Restabelecimento ==
+No -> Broker : CONNECT
+Broker --> No : CONNACK
+No -> Broker : PUBLISH status "ONLINE" (retido)
+No -> No : LED amarelo (drenando)
+
+loop um evento por laço de 50 ms, mais antigo primeiro
+  No -> Broker : PUBLISH seq=N+i, eventTime original
+  alt PUBACK recebido
+    Broker --> No : PUBACK
+    No -> No : remove do buffer
+  else timeout 5 s
+    No -> No : mantém no buffer; fecha conexão;\nreenvio posterior (duplicata possível)
+  end
+  Broker -> Hub : evento seq=N+i
+  Hub -> Hub : eventId já visto? → descarta (idempotência)\nsenão → janela pelo eventTime
+end
+
+No -> No : buffer vazio → LED verde
+Hub -> Hub : janela volta a ter mínimos
+Hub -> Broker : decisão recalculada
+Broker -> Dash : estado atualizado
+
+note right of Hub
+  Eventos com eventTime anterior
+  a (agora − 30 s) são podados
+  da janela no ciclo seguinte:
+  não alteram a decisão atual.
+end note
+@enduml

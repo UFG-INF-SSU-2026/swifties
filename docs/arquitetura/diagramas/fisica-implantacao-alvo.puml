@@ -1,0 +1,46 @@
+@startuml fisica-implantacao-alvo
+!include _estilo.iuml
+title Visão física — Implantação-alvo (produção, planejada)
+
+node "Chão de fábrica" as Planta {
+  node "Ativo (motor)\n<<máquina rotativa>>" as Motor {
+    node "Nó sensor ESP32 ×N\n<<device, bateria ou fonte local>>" as Node {
+      artifact "firmware do nó\nindicadores na borda\nbuffer persistente ~6 h" as NodeArt
+      node "acelerômetro MEMS\ntemp. carcaça + ambiente\nLED RGB" as Sens <<periféricos>>
+    }
+  }
+  node "Pontos de acesso Wi-Fi\nda planta" as AP
+  node "Hub local (névoa)\n<<gateway, rede elétrica>>" as Hub {
+    artifact "broker MQTT local\nlistener TLS 8883" as HubBroker
+    artifact "motor de decisão\njanela 30 min · passo 5 min\nmarca d'água 10 min" as HubEng
+    database "estado por ativo\nlinha de base por regime" as HubDb
+  }
+}
+
+cloud "Nuvem" as Cloud {
+  node "Serviço de ingestão\n<<MQTT/TLS>>" as Ing
+  database "Série temporal\nordens de serviço\nusuários" as Tsdb
+  node "Aplicação web\n<<HTTPS>>" as Web
+  node "Notificações\n(e-mail / push)" as Notif
+}
+
+actor "Técnico" as Tec
+actor "PCM / Gestor" as Pcm
+
+Node -- AP : Wi-Fi
+AP -- HubBroker : MQTT/TLS 8883\nQoS 1, conexão persistente
+HubEng ..> Node : comando de LED\n(MQTT/TLS)
+Hub -- Ing : MQTT/TLS\nstore-and-forward
+Ing -- Tsdb
+Tsdb -- Web
+Tsdb -- Notif
+Web -- Pcm : HTTPS
+Notif -- Tec
+Motor .. Tec : LED visível\nna ronda
+
+note bottom of Hub
+  Fronteira de segurança entre
+  a rede de campo e a corporativa.
+  Decide mesmo sem internet.
+end note
+@enduml
