@@ -1,0 +1,20 @@
+' Estilo comum. Layout Smetana (embutido no PlantUML): dispensa o Graphviz.
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 13
+skinparam roundCorner 8
+skinparam ArrowColor #475569
+skinparam BorderColor #475569
+skinparam TitleFontSize 16
+skinparam NoteBackgroundColor #FEF9C3
+skinparam NoteBorderColor #CA8A04
+skinparam PackageBackgroundColor #F8FAFC
+skinparam ComponentBackgroundColor #E0F2FE
+skinparam NodeBackgroundColor #F1F5F9
+skinparam ClassBackgroundColor #F8FAFC
+skinparam ClassHeaderBackgroundColor #E0F2FE
+skinparam ParticipantBackgroundColor #E0F2FE
+skinparam ActorBackgroundColor #E0F2FE
+skinparam UsecaseBackgroundColor #F8FAFC
+skinparam SequenceGroupBackgroundColor #F1F5F9

@@ -1,0 +1,60 @@
+@startuml logica
+!include _estilo.iuml
+title Visão lógica — Modelo de domínio
+hide empty members
+left to right direction
+
+class "Nó sensor" as No {
+  deviceId
+  buffer de eventos
+}
+abstract class Evento {
+  eventId
+  entityId
+  eventTime
+  quality
+}
+class "Medição de vibração" as Vib {
+  {field} RMS, pico, curtose, freq. dominante
+}
+class "Medição de temperatura" as Temp {
+  {field} carcaça, ambiente, ΔT
+}
+class "Mudança de operação" as Op {
+  LIGADA / DESLIGADA
+}
+class Ativo {
+  entityId
+  estado operacional
+}
+class "Linha de base" as Base {
+  rms, ΔT
+}
+class "Janela (30 s)" as Janela
+class "Decisão" as Decisao {
+  estado
+  {field} métricas (rmsNorm, curtose, ΔT)
+}
+enum "Estado de saúde" as Estado {
+  NORMAL
+  ATENCAO
+  CRITICO
+  SEM_COMUNICACAO
+}
+
+class "Histórico\n(TimescaleDB)" as Hist <<persistente>> {
+  medições válidas
+  mudanças de decisão
+}
+
+No "1" --> "*" Evento : gera
+Evento <|-- Vib
+Evento <|-- Temp
+Evento <|-- Op
+Ativo "1" *-- "1" Janela
+Ativo "1" *-- "1" Base
+Janela o-- "*" Evento
+Ativo --> Decisao : avalia a cada 2 s
+Decisao --> Estado
+Ativo ..> Hist : grava
+@enduml
