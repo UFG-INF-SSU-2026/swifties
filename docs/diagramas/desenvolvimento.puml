@@ -1,7 +1,6 @@
 @startuml desenvolvimento
 !include _estilo.iuml
 title Visão de desenvolvimento — Componentes do repositório
-left to right direction
 
 package "publisher/  (MicroPython)" {
   component "main.py\nlaço principal" as PMain
@@ -18,6 +17,8 @@ package "broker/  (Mosquitto + ngrok)" {
 
 package "consumidor/  (Python)" {
   component "main.py\njanela e regra de decisão" as CMain
+  component "db.py + db/schema.sql\npersistência" as CDb
+  CMain --> CDb
 }
 
 package "dashboard/  (HTML/JS)" {
@@ -29,6 +30,11 @@ package "mobile/  (React Native / Expo)" {
   component "App.tsx\ntelas de ativos e ajustes" as MUi
   MUi --> MApp
 }
+
+cloud "Nuvem" {
+  database "TimescaleDB" as TSDB
+}
+CDb --> TSDB : grava
 
 PEv --> T1 : publica
 CMain --> T1 : assina

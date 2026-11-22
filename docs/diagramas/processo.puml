@@ -7,6 +7,7 @@ participant "Broker\nMosquitto" as Broker
 participant "Consumidor\n(hub)" as Hub
 participant "Dashboard\nweb" as Dash
 participant "App\nmobile" as App
+database "TimescaleDB\n(nuvem)" as DB
 
 loop a cada 2 s (temperatura) / 5 s (vibração)
   No -> No : mede, calcula indicadores\ne guarda evento no buffer
@@ -14,6 +15,7 @@ loop a cada 2 s (temperatura) / 5 s (vibração)
   Broker --> No : confirmação (PUBACK)
   Broker -> Hub : evento
   Hub -> Hub : descarta duplicata\ne adiciona à janela
+  Hub ->> DB : grava medição\n(em lote, assíncrono)
 end
 
 loop a cada 2 s
@@ -23,6 +25,9 @@ loop a cada 2 s
   Broker -> App : decisão
   Dash -> Dash : atualiza card e gráfico
   App -> App : atualiza card;\nvibra se CRITICO
+  opt decisão mudou
+    Hub ->> DB : grava decisão
+  end
 end
 
 group Queda de enlace

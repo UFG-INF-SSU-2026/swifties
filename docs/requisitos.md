@@ -1,6 +1,6 @@
 # Requisitos
 
-**Escopo:** monitorar a vibração e a temperatura de máquinas rotativas, decidir o estado de saúde de cada ativo num hub local e exibir esse estado em tempo real. Esta é a versão protótipo: ESP32 simulado no Wokwi, broker Mosquitto, consumidor Python, dashboard web e app mobile.
+**Escopo:** monitorar a vibração e a temperatura de máquinas rotativas, decidir o estado de saúde de cada ativo num hub local e exibir esse estado em tempo real. Esta é a versão protótipo: ESP32 simulado no Wokwi, broker Mosquitto, consumidor Python, dashboard web, app mobile e TimescaleDB na nuvem.
 
 ## Requisitos funcionais
 
@@ -19,6 +19,7 @@
 | RF-11 | Exibir um card por ativo com estado (cor), métricas, gráfico e histórico de mudanças. | Dashboard, App |
 | RF-12 | Vibrar o celular quando um ativo entrar em `CRITICO`, com opção de desativar. | App |
 | RF-13 | Permitir configurar o endereço e as credenciais do broker no app, salvos no aparelho. | App |
+| RF-14 | Gravar no TimescaleDB as medições válidas e cada mudança de decisão, sem duplicar registros. | Consumidor |
 
 ## Requisitos não funcionais
 
@@ -30,10 +31,13 @@
 | RNF-04 | **Eficiência:** o nó envia só indicadores calculados, nunca o sinal bruto. |
 | RNF-05 | **Segurança:** todo cliente se autentica e só acessa os tópicos de que precisa. |
 | RNF-06 | **Implantação:** cada componente sobe com `docker compose up`. |
+| RNF-07 | **Disponibilidade:** a falha do banco não pode interromper a decisão; as gravações ficam numa fila (até 5000 itens) e são retentadas a cada 5 s. |
+| RNF-08 | **Armazenamento:** medições guardadas por 1 ano e comprimidas após 7 dias; decisões guardadas sem limite. |
 
 ## Limitações do protótipo
 
 - A vibração é sintetizada no Wokwi a partir da posição do acelerômetro.
 - Não há TLS: as senhas trafegam em texto claro.
-- Não há camada de nuvem: o dashboard e o app leem as decisões direto do broker.
+- O dashboard e o app leem as decisões direto do broker e ainda não consultam o histórico do banco.
+- Se o consumidor reiniciar com o banco fora do ar, a fila em memória se perde.
 - O app só funciona com o celular na mesma rede local do broker.

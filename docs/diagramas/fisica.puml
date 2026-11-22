@@ -16,13 +16,20 @@ node "Máquina local (Docker)" {
   node "Nginx\n:8080" as Nginx
 }
 
-node "Navegador" as Browser
-node "Celular\n(Expo Go)" as Phone
+cloud "VPS (nuvem)" {
+  database "TimescaleDB\n:5432" as TSDB
+}
+
+rectangle "Usuários" {
+  node "Navegador" as Browser
+  node "Celular\n(Expo Go)" as Phone
+}
 
 Esp --> Ngrok : MQTT
 Ngrok --> Mosq : MQTT 1883
 Cons --> Mosq : MQTT 1883
+Cons --> TSDB : PostgreSQL 5432
 Browser --> Nginx : HTTP
-Browser --> Mosq : MQTT/WebSocket 9001
-Phone --> Mosq : MQTT/WebSocket 9001\n(Wi-Fi local)
+Browser --> Mosq : WS 9001
+Phone --> Mosq : WS 9001 (Wi-Fi local)
 @enduml

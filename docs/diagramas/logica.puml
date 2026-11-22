@@ -42,6 +42,11 @@ enum "Estado de saúde" as Estado {
   SEM_COMUNICACAO
 }
 
+class "Histórico\n(TimescaleDB)" as Hist <<persistente>> {
+  medições válidas
+  mudanças de decisão
+}
+
 No "1" --> "*" Evento : gera
 Evento <|-- Vib
 Evento <|-- Temp
@@ -51,4 +56,5 @@ Ativo "1" *-- "1" Base
 Janela o-- "*" Evento
 Ativo --> Decisao : avalia a cada 2 s
 Decisao --> Estado
+Ativo ..> Hist : grava
 @enduml
