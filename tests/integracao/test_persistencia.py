@@ -66,7 +66,7 @@ def test_medicoes_e_decisoes_gravadas_e_recuperadas(consumidor, produtor, observ
     # inválido não é gravado; decisões repetidas (publicadas a cada 2 s) só geram linha na mudança
     esperar(lambda: len(observador.decisoes(entidade)) >= 4, 15, msg="mais ciclos")
     assert contar("medicoes_vibracao", entidade) == 5
-    decs = [r[1] for r in consultar("SELECT decisao FROM decisoes WHERE entity_id = %s ORDER BY ts", entidade)]
+    decs = [r[0] for r in consultar("SELECT decisao FROM decisoes WHERE entity_id = %s ORDER BY ts", entidade)]
     assert all(a != b for a, b in zip(decs, decs[1:])), f"decisões repetidas gravadas: {decs}"
 
 
