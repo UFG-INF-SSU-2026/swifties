@@ -24,8 +24,15 @@ package "dashboard/  (HTML/JS)" {
   component "app.js\nvisualização" as DApp
 }
 
+package "mobile/  (React Native / Expo)" {
+  component "useMqtt.ts\nconexão e alertas" as MApp
+  component "App.tsx\ntelas de ativos e ajustes" as MUi
+  MUi --> MApp
+}
+
 PEv --> T1 : publica
 CMain --> T1 : assina
 CMain --> T2 : publica
 DApp --> T2 : assina
+MApp --> T2 : assina
 @enduml

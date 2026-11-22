@@ -17,10 +17,12 @@ node "Máquina local (Docker)" {
 }
 
 node "Navegador" as Browser
+node "Celular\n(Expo Go)" as Phone
 
 Esp --> Ngrok : MQTT
 Ngrok --> Mosq : MQTT 1883
 Cons --> Mosq : MQTT 1883
 Browser --> Nginx : HTTP
 Browser --> Mosq : MQTT/WebSocket 9001
+Phone --> Mosq : MQTT/WebSocket 9001\n(Wi-Fi local)
 @enduml

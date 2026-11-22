@@ -1,11 +1,12 @@
 @startuml processo
 !include _estilo.iuml
-title Visão de processo — Da medição ao dashboard
+title Visão de processo — Da medição às interfaces
 
 participant "Nó ESP32" as No
 participant "Broker\nMosquitto" as Broker
 participant "Consumidor\n(hub)" as Hub
-participant "Dashboard" as Dash
+participant "Dashboard\nweb" as Dash
+participant "App\nmobile" as App
 
 loop a cada 2 s (temperatura) / 5 s (vibração)
   No -> No : mede, calcula indicadores\ne guarda evento no buffer
@@ -19,7 +20,9 @@ loop a cada 2 s
   Hub -> Hub : aplica regra sobre a janela\n→ NORMAL / ATENCAO / CRITICO
   Hub -> Broker : publica decisão
   Broker -> Dash : decisão
+  Broker -> App : decisão
   Dash -> Dash : atualiza card e gráfico
+  App -> App : atualiza card;\nvibra se CRITICO
 end
 
 group Queda de enlace
