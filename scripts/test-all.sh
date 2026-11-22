@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Roda todas as suítes: Python (consumidor + publisher), dashboard (Node) e mobile (Jest).
+#   ./scripts/test-all.sh               só testes unitários
+#   ./scripts/test-all.sh --integracao  também os de integração (exige Docker)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -13,3 +15,8 @@ fi
 echo "== consumidor + publisher (pytest) =="; .venv/bin/pytest
 echo "== dashboard (node:test + jsdom) ==";   (cd dashboard && npm test --silent)
 echo "== mobile (jest-expo) ==";              (cd mobile && npx jest)
+
+if [ "${1:-}" = "--integracao" ]; then
+  echo "== integração (Docker: Mosquitto + TimescaleDB) =="
+  .venv/bin/pytest -m integracao -v -rxs
+fi
