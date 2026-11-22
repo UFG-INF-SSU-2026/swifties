@@ -1,0 +1,31 @@
+@startuml processo
+!include _estilo.iuml
+title Visão de processo — Da medição ao dashboard
+
+participant "Nó ESP32" as No
+participant "Broker\nMosquitto" as Broker
+participant "Consumidor\n(hub)" as Hub
+participant "Dashboard" as Dash
+
+loop a cada 2 s (temperatura) / 5 s (vibração)
+  No -> No : mede, calcula indicadores\ne guarda evento no buffer
+  No -> Broker : publica evento (QoS 1)
+  Broker --> No : confirmação (PUBACK)
+  Broker -> Hub : evento
+  Hub -> Hub : descarta duplicata\ne adiciona à janela
+end
+
+loop a cada 2 s
+  Hub -> Hub : aplica regra sobre a janela\n→ NORMAL / ATENCAO / CRITICO
+  Hub -> Broker : publica decisão
+  Broker -> Dash : decisão
+  Dash -> Dash : atualiza card e gráfico
+end
+
+group Queda de enlace
+  No -x Broker : conexão perdida
+  No -> No : continua medindo,\nacumula eventos no buffer
+  Hub -> Dash : SEM_COMUNICACAO\n(via broker, após 15 s)
+  No -> Broker : reconecta e reenvia o buffer
+end
+@enduml

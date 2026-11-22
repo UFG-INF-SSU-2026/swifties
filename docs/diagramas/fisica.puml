@@ -1,0 +1,26 @@
+@startuml fisica
+!include _estilo.iuml
+title Visão física — Implantação do protótipo
+
+cloud "Wokwi (simulador)" {
+  node "ESP32\nMPU6050, 2× DS18B20, LED" as Esp
+}
+
+cloud "Internet" {
+  node "ngrok\n(túnel TCP)" as Ngrok
+}
+
+node "Máquina local (Docker)" {
+  node "Mosquitto\n:1883 / :9001" as Mosq
+  node "Consumidor\n(Python)" as Cons
+  node "Nginx\n:8080" as Nginx
+}
+
+node "Navegador" as Browser
+
+Esp --> Ngrok : MQTT
+Ngrok --> Mosq : MQTT 1883
+Cons --> Mosq : MQTT 1883
+Browser --> Nginx : HTTP
+Browser --> Mosq : MQTT/WebSocket 9001
+@enduml
