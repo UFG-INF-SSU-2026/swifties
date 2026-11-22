@@ -7,6 +7,8 @@ from statistics import mean, median
 
 import paho.mqtt.client as mqtt
 
+import db
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("consumidor")
 
@@ -80,8 +82,10 @@ def ao_receber(cliente, userdata, msg):
     ts = datetime.strptime(ev["eventTime"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     if tipo == "medicao.vibracao":
         ativo.vib.append((ts, ev["data"]))
+        db.gravar_medicao(ev, ts)
     elif tipo == "medicao.temperatura":
         ativo.temp.append((ts, ev["data"]))
+        db.gravar_medicao(ev, ts)
 
 
 def avaliar(ativo, agora):
@@ -133,9 +137,11 @@ def ciclo(cliente):
         if decisao != ativo.ultima_decisao:
             log.info("[DECISAO] %s -> %s", ativo.entity_id, decisao)
             ativo.ultima_decisao = decisao
+            db.gravar_decisao(ativo.entity_id, decisao, agora, metricas)
 
 
 def main():
+    db.iniciar()
     cliente = mqtt.Client(client_id="consumidor-marco2",
                            callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
     cliente.username_pw_set(MQTT_USUARIO, MQTT_SENHA)

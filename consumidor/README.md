@@ -51,3 +51,10 @@ python3 ferramentas/mock_publisher.py --cenario sem_comunicacao
 A janela é de 30s (mínimo de 3 amostras de cada tipo) e o ΔT usa a média das 3 últimas temperaturas, para uma mudança no sensor aparecer em poucos segundos. A cada ciclo o consumidor publica a decisão atual (com `retain`), não só quando ela muda, para o dashboard ter métricas novas a cada 2s e mostrar o último estado ao abrir.
 
 Rode `python main.py` numa aba e o cenário desejado em outra. Os cenários `atencao`/`critico` esperam ~12s entre a rajada que define a baseline e a rajada anômala, de propósito: o consumidor só reavalia a cada 2s (`PASSO_S`), então as duas rajadas precisam cair em ciclos diferentes — senão a primeira avaliação mistura as duas e aprende uma baseline errada (e sempre volta `NORMAL` na primeira janela).
+
+## Persistência (TimescaleDB)
+
+O consumidor grava no TimescaleDB enquanto roda (`db.py`, thread própria, em lotes):
+`medicoes_vibracao` e `medicoes_temperatura` (só eventos `VALIDO`) e `decisoes` (só quando o estado do ativo muda). Esquema em `db/schema.sql` (hypertables, compressão após 7 dias, retenção de 1 ano nas medições), aplicado automaticamente na conexão (`DB_APLICAR_SCHEMA=1`).
+
+Configure no `.env`: `POSTGRES_HOST` (IP da VPS), `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`. Sem `POSTGRES_HOST` a gravação fica desabilitada. Se o banco cair, o hub segue decidindo e tenta de novo a cada 5 s (fila de até 5000 itens; excedendo, descarta os mais antigos).
