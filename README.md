@@ -27,3 +27,18 @@
 **8. Classificação.** É *rede de sensores* na camada de campo (nós autônomos a bateria reportando a um coletor); é *IoT* na arquitetura (gateway, nuvem, aplicação web); é *sistema ciber-físico* pelo laço fechado entre estado mecânico, decisão e atuação; e é *ubíquo* porque a tecnologia desaparece no ambiente — o técnico olha para a máquina, não para um computador.
 
 **9. Contexto e adaptação.** Máquina desligada: suspende o diagnóstico e reduz a amostragem. Indicador perto do limiar: ciclo passa de 10 min para 1 min e envia o espectro. Sinal Wi-Fi fraco ou ponto de acesso indisponível: o nó reduz tentativas de reconexão, acumula leituras em buffer local e reenvia ao restabelecer; o hub segue decidindo e, após o timeout, marca o ativo como "sem comunicação". Energia escassa ou nó a bateria: degradação graciosa — intervalos maiores, agrupamento de envios e desativação da análise espectral local. Mudança de regime ou de temperatura ambiente: troca de linha de base e avaliação por delta. Papel do usuário: LED em campo, tendência para o PCM, indicadores agregados para o gestor.
+
+## Testes automatizados
+
+```bash
+./scripts/test-all.sh
+```
+
+| Componente | Ferramenta | O que cobre |
+|---|---|---|
+| `consumidor/` | pytest | recepção/dedup de eventos, regra de decisão (baseline, atenção, crítico, silêncio), ciclo de publicação |
+| `publisher/` | pytest (com shims de MicroPython) | buffer e reenvio, MQTT/last will, indicadores do acelerômetro, validações, histerese de operação |
+| `dashboard/` | node:test + jsdom | cards, histórico, limites de gráfico, status do broker, dados desatualizados |
+| `mobile/` | jest-expo + Testing Library | hook MQTT, vibração, cards, sparkline, ajustes, tema, fluxo do App |
+
+O `publisher/main.py` roda hardware ao ser importado; por isso só `EstadoOperacao` é testada (extraída via AST, sem alterar o firmware). O CI está em `.github/workflows/tests.yml`.
