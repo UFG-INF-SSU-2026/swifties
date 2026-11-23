@@ -42,3 +42,5 @@
 | `mobile/` | jest-expo + Testing Library | hook MQTT, vibração, cards, sparkline, ajustes, tema, fluxo do App |
 
 O `publisher/main.py` roda hardware ao ser importado; por isso só `EstadoOperacao` é testada (extraída via AST, sem alterar o firmware). O CI está em `.github/workflows/tests.yml`.
+
+Testes de **integração** (broker Mosquitto e TimescaleDB reais via Docker, consumidor como processo): `pytest -m integracao` ou `./scripts/test-all.sh --integracao`. Comandos, verificações cobertas (fluxo, persistência, segurança, falha e recuperação), rastreabilidade com os requisitos e evidências em [`docs/testes.md`](docs/testes.md).

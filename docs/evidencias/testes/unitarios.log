@@ -1,0 +1,15 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.8, pytest-9.2.0, pluggy-1.7.0
+rootdir: 
+configfile: pytest.ini
+testpaths: tests
+collected 114 items / 22 deselected / 92 selected
+
+tests/consumidor/test_consumidor.py ...........................          [ 29%]
+tests/consumidor/test_db.py ..........                                   [ 40%]
+tests/publisher/test_estado_operacao.py .....                            [ 45%]
+tests/publisher/test_evento.py ..................                        [ 65%]
+tests/publisher/test_sensores.py ................................        [100%]
+
+- generated xml file: docs/evidencias/testes/unitarios.xml -
+====================== 92 passed, 22 deselected in 0.26s =======================
