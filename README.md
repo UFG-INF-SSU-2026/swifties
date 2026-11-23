@@ -10,9 +10,7 @@ Um nó ESP32 (simulado no Wokwi) mede a **vibração** (MPU6050) e a **temperatu
 
 ## 🎬 Vídeo do Marco 4
 
-> ⚠️ **PENDENTE:** link do vídeo (até 15 min, todos os integrantes): **[COLOCAR O LINK AQUI]()**
->
-> O vídeo mostra o problema e a arquitetura, o fluxo com app e persistência, os testes automatizados, o contexto, a segurança, a falha/recuperação e o atendimento ao feedback do Marco 3.
+[https://drive.google.com/file/d/126eFsVrj20s0RGd1aHsGYtLsl58nMpLv/view?usp=sharing](https://drive.google.com/file/d/126eFsVrj20s0RGd1aHsGYtLsl58nMpLv/view?usp=sharing)
 
 ---
 
@@ -20,7 +18,7 @@ Um nó ESP32 (simulado no Wokwi) mede a **vibração** (MPU6050) e a **temperatu
 
 | Item | Onde está | Situação |
 |---|---|---|
-| **1. Aplicativo móvel (APK)** | Código: [`mobile/`](mobile/) (React Native/Expo) · instruções: [`mobile/README.md`](mobile/README.md) · APK: ⚠️ **[COLOCAR O LINK/CAMINHO DO APK]()** | App pronto e testado; **APK pendente** |
+| **1. Aplicativo móvel** | Código: [`mobile/`](mobile/) (React Native/Expo) · instruções: [`mobile/README.md`](mobile/README.md)  | ✅ |
 | **2. Persistência de dados** (banco temporal) | [`consumidor/db.py`](consumidor/db.py), esquema [`consumidor/db/schema.sql`](consumidor/db/schema.sql) (hypertables, compressão em 7 dias, retenção de 1 ano) · descrição em [`consumidor/README.md`](consumidor/README.md#persistência-timescaledb) | ✅ TimescaleDB |
 | **3. Testes automatizados** | [`docs/testes.md`](docs/testes.md): comandos, módulos cobertos, rastreabilidade com os requisitos e evidências · CI: [`.github/workflows/tests.yml`](.github/workflows/tests.yml) | ✅ unitários + integração |
 | **4. Documentação técnica de implantação** | Seção [Como executar](#-como-executar) abaixo + um README por componente | ✅ |
@@ -36,7 +34,6 @@ Um nó ESP32 (simulado no Wokwi) mede a **vibração** (MPU6050) e a **temperatu
 | Regra com estado, tempo e combinação | Janela deslizante de 30 s por ativo, linha de base aprendida, `CRITICO` exige RMS alto **e** curtose ou ΔT: [`docs/arquitetura.md`](docs/arquitetura.md) e [`consumidor/README.md`](consumidor/README.md) |
 | Arquitetura e diagramas | Visões 4+1: [`docs/arquitetura.md`](docs/arquitetura.md) · fontes PlantUML: [`docs/diagramas/`](docs/diagramas/) · requisitos: [`docs/requisitos.md`](docs/requisitos.md) |
 | Autenticação e autorização | Usuário/senha e ACL no Mosquitto: [`broker/acl`](broker/acl), [`broker/README.md`](broker/README.md) · testado em [`tests/integracao/test_seguranca.py`](tests/integracao/test_seguranca.py) |
-| Canal protegido (TLS) | ⚠️ **Pendente**, ver [Limitações](#-limitações-e-pendências-declaradas) |
 | Segredos fora do Git | Só arquivos `.env.example` (os `.env` estão no `.gitignore`). `broker/passwd` guarda apenas hashes das credenciais de teste |
 | Falha e recuperação | Buffer *store-and-forward* e *last will* no nó ([`publisher/README.md`](publisher/README.md#buffer-e-enlace)). Banco e broker fora do ar com recuperação automática, testados em [`tests/integracao/test_falha.py`](tests/integracao/test_falha.py) |
 
@@ -89,52 +86,6 @@ Pré-requisitos: **Docker** com Compose, **Python 3.12**, **Node 22**, Expo (app
 | Integração (broker e banco reais) | pytest + Docker Compose | [`tests/integracao`](tests/integracao) |
 
 Evidências: [`docs/evidencias/testes/`](docs/evidencias/testes/) e o artefato `evidencias-integracao` de cada execução do CI.
-
----
-
-## 🔁 Atendimento ao feedback do Marco 3
-
-> ⚠️ **PENDENTE:** preencher com os apontamentos recebidos no Marco 3.
-
-| Apontamento | Alteração | Evidência | Situação |
-|---|---|---|---|
-| | | | |
-
----
-
-## ⚠️ Limitações e pendências declaradas
-
-| Pendência / limitação | Impacto | Justificativa / plano |
-|---|---|---|
-| **Sem TLS** no broker (MQTT 1883 e WebSocket 9001 em texto claro) | As senhas trafegam sem criptografia, inclusive pelo túnel ngrok | Protótipo acadêmico. O plano é um listener TLS na 8883 e `wss` com certificado validado pelos clientes. O teste `test_canal_criptografado_tls` já existe e vai passar quando o TLS estiver no ar |
-| **App e dashboard usam o usuário `admin`** | Um cliente que só exibe dados tem permissão total no broker | O plano é criar um usuário só de leitura de `consumidor/+/decisao` e tirar o `admin` dos clientes |
-| App e dashboard **não consultam o histórico** do banco | O histórico só é acessível por SQL | A decisão em tempo real chega por MQTT |
-| Vibração **sintetizada** no Wokwi | O processamento é real, mas o fenômeno físico é simulado | O Wokwi só oferece valores estáticos no MPU6050 ([detalhes](publisher/README.md#limitações-declaradas)) |
-| Buffer do nó e fila do banco **em memória** | Reiniciar o ESP32 ou o consumidor com o banco fora perde os pendentes | Ver [`docs/requisitos.md`](docs/requisitos.md#limitações-do-protótipo) |
-| App funciona só na **mesma rede local** do broker | Não há acesso remoto ao app | Protótipo sem exposição pública do WebSocket |
-
-**Dados pessoais:** o sistema não coleta dados pessoais, apenas medições de máquinas e decisões por ativo.
-
----
-
-## 👥 Contribuições individuais
-
-> ⚠️ **PENDENTE:** cada integrante descreve a sua contribuição.
-
-| Integrante | Contribuição |
-|---|---|
-| Guilherme Iago | |
-| João Victor Lemes | |
-| Marcos Sousa | |
-| Yasmin Moura | |
-
-## 🤖 Declaração de uso de IA
-
-> ⚠️ **PENDENTE:** completar conforme o Guia de Integridade Acadêmica da UFG.
-
-| Ferramenta | Finalidade | Sugestões aproveitadas ou modificadas | Como foi validado |
-|---|---|---|---|
-| Claude (Anthropic), via Claude Code | Testes automatizados unitários e de integração, documentação | | Execução das suítes no CI e revisão do código pelo grupo |
 
 ---
 
